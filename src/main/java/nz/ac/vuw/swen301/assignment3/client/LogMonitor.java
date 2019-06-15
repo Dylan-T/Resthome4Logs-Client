@@ -1,9 +1,19 @@
 package nz.ac.vuw.swen301.assignment3.client;
 
-/**
- * connects to the log server. This is a SWING application that displays log information fetched from the server
- * from http://localhost:8080/resthome4logs/logs in a table.
- * It also has the functionality to fetch the excel file from http://localhost:8080/resthome4logs/stats
- */
+import javax.swing.*;
+
 public class LogMonitor {
+    private JComboBox comboBox1;
+    private JTable table1;
+    private JButton button1;
+    private JButton button2;
+    private JTextArea logMonitorTextArea;
+
+    private void createUIComponents() {
+        // TODO: place custom component creation code here
+    }
+
+    public static void main(String[] args){
+
+    }
 }
