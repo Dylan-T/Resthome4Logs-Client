@@ -19,6 +19,7 @@ import org.apache.log4j.spi.LoggingEvent;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  *{
@@ -42,14 +43,12 @@ public class Resthome4LogsAppender extends AppenderSkeleton {
 
             URIBuilder builder = new URIBuilder();
             builder.setScheme("http").setHost("localhost:8080").setPath("/resthome4logs/logs");
-//                    .setParameter("LogEvent", gson.toJson(loggingEvent));
             URI uri = builder.build();
 
             // create and execute the request
             HttpClient httpClient = HttpClientBuilder.create().build();
             HttpPost request = new HttpPost(uri);
 
-            //            StringEntity params = new StringEntity("details={\"id\":\"" + "INSERTIDHERE" + "\",\"message\":\""+ loggingEvent.getMessage() +"\",\"timestamp\":\"" + loggingEvent.getTimeStamp() + "\",\"thread\":\"" + loggingEvent.getThreadName() + "\",\"logger\":\"" + loggingEvent.getLoggerName() + "\",\"level\":\"" + loggingEvent.getLevel() + "\",\"errorDetails\":\"" + loggingEvent.getThrowableInformation() + "\",} ");
             StringEntity params = new StringEntity(formatEvent(loggingEvent).toString());
             params.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
             request.setEntity(params);
@@ -62,20 +61,6 @@ public class Resthome4LogsAppender extends AppenderSkeleton {
         }catch (Exception e){
 
         }
-    }
-
-    public JsonObject formatEvent(LoggingEvent loggingEvent){
-        JsonObject json = new JsonObject();
-        json.addProperty("id", 1);
-        json.addProperty("message", (String)loggingEvent.getMessage());
-        json.addProperty("timestamp", loggingEvent.getTimeStamp());
-        json.addProperty("thread", loggingEvent.getThreadName());
-        json.addProperty("logger", loggingEvent.getLoggerName());
-        json.addProperty("level", loggingEvent.getLevel().toString());
-        json.addProperty("errorDetails", loggingEvent.getNDC());
-        return json;
-
-
     }
 
     public List<String> getLogs(int limit, String level){
@@ -100,6 +85,19 @@ public class Resthome4LogsAppender extends AppenderSkeleton {
         }
 
         return null;
+    }
+
+
+    public JsonObject formatEvent(LoggingEvent loggingEvent){
+        JsonObject json = new JsonObject();
+        json.addProperty("id", UUID.randomUUID().toString());
+        json.addProperty("message", (String)loggingEvent.getMessage());
+        json.addProperty("timestamp", loggingEvent.getTimeStamp());
+        json.addProperty("thread", loggingEvent.getThreadName());
+        json.addProperty("logger", loggingEvent.getLoggerName());
+        json.addProperty("level", loggingEvent.getLevel().toString());
+        json.addProperty("errorDetails", loggingEvent.getNDC());
+        return json;
     }
 
 

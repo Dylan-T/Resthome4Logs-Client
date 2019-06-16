@@ -1,6 +1,9 @@
 package test.nz.ac.vuw.swen301.assignment3.client;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonParser;
+import com.sun.javafx.util.Logging;
 import nz.ac.vuw.swen301.assignment3.client.Resthome4LogsAppender;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -16,6 +19,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.net.URI;
+import java.util.ArrayList;
 
 public class Resthome4LogsAppenderTests {
     private static final String TEST_HOST = "localhost";
@@ -90,7 +94,16 @@ public class Resthome4LogsAppenderTests {
         Resthome4LogsAppender appender = new Resthome4LogsAppender();
         String json = appender.formatEvent(logEvent).toString();
         System.out.println(json);
-        System.out.println(logEvent.toString());
-        System.out.println(logEvent.getMessage());
+    }
+
+    @Test
+    public void test1(){
+        // Convert JSON Array String into Java Array List
+        String jsonArrayString = "[{\"id\":\"1\",\"message\":\"test\",\"timestamp\":\"11.11.1111\",\"thread\":\"thread\",\"logger\":\"logger\",\"level\":\"ERROR\",\"errorDetails\":\"eDets\"}]";
+        Gson googleJson = new Gson();
+        JsonParser jsonParser = new JsonParser();
+        JsonArray arrayFromString = jsonParser.parse(jsonArrayString).getAsJsonArray();
+
+        System.out.println(arrayFromString);
     }
 }
