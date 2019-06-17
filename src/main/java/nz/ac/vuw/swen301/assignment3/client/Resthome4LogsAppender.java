@@ -8,6 +8,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicHeader;
@@ -33,14 +34,22 @@ import java.util.UUID;
  *   }
  */
 public class Resthome4LogsAppender extends AppenderSkeleton {
+    private List<String> logCache;
+    private int cacheLimit;
 
     public Resthome4LogsAppender(){ }
 
     @Override
     protected void append(LoggingEvent loggingEvent) {
-        //Note that arrays of log events (and not just single log events) are processed.
-        try {
+        logCache.add(formatEvent(loggingEvent).toString());
+        if(logCache.size() >= cacheLimit){
+            postLogs(logCache);
+            logCache.clear();
+        }
+    }
 
+    private void postLogs(List<String> loggingEvents){
+        try {
             URIBuilder builder = new URIBuilder();
             builder.setScheme("http").setHost("localhost:8080").setPath("/resthome4logs/logs");
             URI uri = builder.build();
@@ -49,15 +58,15 @@ public class Resthome4LogsAppender extends AppenderSkeleton {
             HttpClient httpClient = HttpClientBuilder.create().build();
             HttpPost request = new HttpPost(uri);
 
-            StringEntity params = new StringEntity(formatEvent(loggingEvent).toString());
+            //Create entity
+            StringEntity params = new StringEntity(new Gson().toJson(loggingEvents));
             params.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
             request.setEntity(params);
 
+            //Execute request
             HttpResponse response = httpClient.execute(request);
 
-            //Not sure what the response is
             String content = EntityUtils.toString(response.getEntity());
-            System.out.println(content);
         }catch (Exception e){
 
         }
