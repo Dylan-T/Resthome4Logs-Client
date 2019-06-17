@@ -72,29 +72,33 @@ public class Resthome4LogsAppender extends AppenderSkeleton {
         }
     }
 
-    public List<String> getLogs(int limit, String level){
-        try {
-            URIBuilder builder = new URIBuilder();
-            builder.setScheme("http").setHost("localhost:8080").setPath("/resthome4logs/logs")
-                    .setParameter("limit", ""+limit)
-                    .addParameter("level", level);
-
-            URI uri = builder.build();
-
-            // create and execute the request
-            HttpClient httpClient = HttpClientBuilder.create().build();
-            HttpGet request = new HttpGet(uri);
-            HttpResponse response = httpClient.execute(request);
-
-            String logs = EntityUtils.toString(response.getEntity());
-            Gson gson = new Gson();
-            return gson.fromJson(logs, new ArrayList<LoggingEvent>().getClass());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return null;
-    }
+    //THIS WILL BE IMPLEMENTED WITHIN THE LOG MONITOR
+//    public String getLogs(int limit, String level){
+//        try {
+//            // build request and set paramters
+//            URIBuilder builder = new URIBuilder();
+//            builder.setScheme("http").setHost("localhost:8080").setPath("/resthome4logs/logs")
+//                    .setParameter("limit", ""+limit)
+//                    .addParameter("level", level);
+//            URI uri = builder.build();
+//            HttpClient httpClient = HttpClientBuilder.create().build();
+//            HttpGet request = new HttpGet(uri);
+//
+//            //execute request
+//            HttpResponse response = httpClient.execute(request);
+//
+//            //convert json
+//            String logs = EntityUtils.toString(response.getEntity());
+//            System.out.println(logs);
+//            return logs;
+////            Gson gson = new Gson();
+////            return gson.fromJson(logs, new ArrayList<String>().getClass());
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//
+//        return null;
+//    }
 
 
     public JsonObject formatEvent(LoggingEvent loggingEvent){

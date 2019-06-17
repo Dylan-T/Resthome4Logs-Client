@@ -1,9 +1,5 @@
 package test.nz.ac.vuw.swen301.assignment3.client;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonParser;
-import com.sun.javafx.util.Logging;
 import nz.ac.vuw.swen301.assignment3.client.Resthome4LogsAppender;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -13,13 +9,10 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.LoggingEvent;
-import org.junit.AfterClass;
 import org.junit.Assume;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.net.URI;
-import java.util.ArrayList;
 
 public class Resthome4LogsAppenderTests {
     private static final String TEST_HOST = "localhost";
