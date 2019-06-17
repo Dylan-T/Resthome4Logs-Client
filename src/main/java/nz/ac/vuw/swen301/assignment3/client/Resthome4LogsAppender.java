@@ -34,10 +34,11 @@ import java.util.*;
  *   }
  */
 public class Resthome4LogsAppender extends AppenderSkeleton {
-    private List<String> logCache;
-    private int cacheLimit;
+    private List<String> logCache = new ArrayList<>();
+    private int cacheLimit = 10;
 
-    public Resthome4LogsAppender(){ }
+    public Resthome4LogsAppender(){
+    }
 
     @Override
     protected void append(LoggingEvent loggingEvent) {
@@ -115,7 +116,13 @@ public class Resthome4LogsAppender extends AppenderSkeleton {
         json.addProperty("thread", loggingEvent.getThreadName());
         json.addProperty("logger", loggingEvent.getLoggerName());
         json.addProperty("level", loggingEvent.getLevel().toString());
-        json.addProperty("errorDetails", loggingEvent.getNDC());
+        String errorDetails;
+        if(loggingEvent.getThrowableInformation() == null){
+            errorDetails = "";
+        }else{
+            errorDetails = loggingEvent.getThrowableInformation().toString();
+        }
+        json.addProperty("errorDetails", errorDetails);
         return json;
     }
 
