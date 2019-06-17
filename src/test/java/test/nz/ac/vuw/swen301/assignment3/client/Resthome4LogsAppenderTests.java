@@ -96,14 +96,4 @@ public class Resthome4LogsAppenderTests {
         System.out.println(json);
     }
 
-    @Test
-    public void test1(){
-        // Convert JSON Array String into Java Array List
-        String jsonArrayString = "[{\"id\":\"1\",\"message\":\"test\",\"timestamp\":\"11.11.1111\",\"thread\":\"thread\",\"logger\":\"logger\",\"level\":\"ERROR\",\"errorDetails\":\"eDets\"}]";
-        Gson googleJson = new Gson();
-        JsonParser jsonParser = new JsonParser();
-        JsonArray arrayFromString = jsonParser.parse(jsonArrayString).getAsJsonArray();
-
-        System.out.println(arrayFromString);
-    }
 }

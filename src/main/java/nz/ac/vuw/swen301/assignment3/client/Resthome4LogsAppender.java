@@ -18,9 +18,9 @@ import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.spi.LoggingEvent;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  *{
@@ -101,7 +101,13 @@ public class Resthome4LogsAppender extends AppenderSkeleton {
         JsonObject json = new JsonObject();
         json.addProperty("id", UUID.randomUUID().toString());
         json.addProperty("message", (String)loggingEvent.getMessage());
-        json.addProperty("timestamp", loggingEvent.getTimeStamp());
+
+        Date date = new Date(loggingEvent.getTimeStamp());
+        DateFormat formatter = new SimpleDateFormat("dd:MM:YYYY");
+        formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+        String dateFormatted = formatter.format(date);
+
+        json.addProperty("timestamp", dateFormatted);
         json.addProperty("thread", loggingEvent.getThreadName());
         json.addProperty("logger", loggingEvent.getLoggerName());
         json.addProperty("level", loggingEvent.getLevel().toString());
