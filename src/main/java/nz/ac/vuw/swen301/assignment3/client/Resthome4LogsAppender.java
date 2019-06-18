@@ -49,7 +49,7 @@ public class Resthome4LogsAppender extends AppenderSkeleton {
         }
     }
 
-    private void postLogs(List<String> loggingEvents){
+    private void postLogs(List<String> loggingEvents) {
         try {
             URIBuilder builder = new URIBuilder();
             builder.setScheme("http").setHost("localhost:8080").setPath("/resthome4logs/logs");
@@ -68,39 +68,10 @@ public class Resthome4LogsAppender extends AppenderSkeleton {
             HttpResponse response = httpClient.execute(request);
 
             String content = EntityUtils.toString(response.getEntity());
-        }catch (Exception e){
+        } catch (Exception e) {
 
         }
     }
-
-    //THIS WILL BE IMPLEMENTED WITHIN THE LOG MONITOR
-//    public String getLogs(int limit, String level){
-//        try {
-//            // build request and set paramters
-//            URIBuilder builder = new URIBuilder();
-//            builder.setScheme("http").setHost("localhost:8080").setPath("/resthome4logs/logs")
-//                    .setParameter("limit", ""+limit)
-//                    .addParameter("level", level);
-//            URI uri = builder.build();
-//            HttpClient httpClient = HttpClientBuilder.create().build();
-//            HttpGet request = new HttpGet(uri);
-//
-//            //execute request
-//            HttpResponse response = httpClient.execute(request);
-//
-//            //convert json
-//            String logs = EntityUtils.toString(response.getEntity());
-//            System.out.println(logs);
-//            return logs;
-////            Gson gson = new Gson();
-////            return gson.fromJson(logs, new ArrayList<String>().getClass());
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//
-//        return null;
-//    }
-
 
     public JsonObject formatEvent(LoggingEvent loggingEvent){
         JsonObject json = new JsonObject();

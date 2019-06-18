@@ -24,8 +24,7 @@ public class CreateRandomLogs {
             Random random = new Random();
 
             while(true) {
-                //LoggingEvent logEvent = new LoggingEvent("", logger, Level.INFO, "Test", null);
-                int randL = random.nextInt(5);
+                int randL = random.nextInt(6);
                 int randM = random.nextInt(5);
 
                 logger.log(levels[randL], messages[randM]);
