@@ -18,7 +18,7 @@ public class CreateRandomLogs {
     public static void main(String[] args) {
         try {
             Logger logger = Logger.getLogger("test1");
-            logger.addAppender(new Resthome4LogsAppender(2));
+            logger.addAppender(new Resthome4LogsAppender(1));
             Level[] levels = {Level.TRACE, Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR, Level.FATAL};
             String[] messages = {"message0","message1","message2","message3","message4"};
             Random random = new Random();

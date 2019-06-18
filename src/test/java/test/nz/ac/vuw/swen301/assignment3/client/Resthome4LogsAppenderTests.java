@@ -1,6 +1,7 @@
 package test.nz.ac.vuw.swen301.assignment3.client;
 
 import junit.framework.TestCase;
+import nz.ac.vuw.swen301.assignment3.client.LogMonitor;
 import nz.ac.vuw.swen301.assignment3.client.Resthome4LogsAppender;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -16,10 +17,15 @@ import org.junit.Test;
 
 import java.net.URI;
 import java.sql.Time;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class Resthome4LogsAppenderTests {
     private static final String TEST_HOST = "localhost";
@@ -60,101 +66,168 @@ public class Resthome4LogsAppenderTests {
 
     // APPENDER TESTS ==================================================================================================
 
-    //public LoggingEvent(String fqnOfCategoryClass, Category logger, Priority level, Object message, Throwable throwable)
-    //public LoggingEvent(String fqnOfCategoryClass, Category logger, long timeStamp, Priority level, Object message, Throwable throwable)
 
     @Test
     public void testLogCache()throws Exception {
         Assume.assumeTrue(isServerReady());
-        Logger logger = Logger.getLogger("test3");
-    }
-
-    @Test
-    public void testClose()throws Exception {
-        Assume.assumeTrue(isServerReady());
-        Logger logger = Logger.getLogger("test4");
-        Resthome4LogsAppender appender = new Resthome4LogsAppender();
+        Logger logger = Logger.getLogger("testLOGCACHE");
+        Resthome4LogsAppender appender = new Resthome4LogsAppender(3);
         logger.addAppender(appender);
-        logger.error("Message");
+        logger.error("error test");
+        logger.debug("debug test");
+
+        assertEquals(2, appender.logCache.size());
+        logger.debug("debug test");
+        assertEquals(0, appender.logCache.size());
     }
 
     @Test
     public void testERROR()throws Exception {
         Assume.assumeTrue(isServerReady());
-        Logger logger = Logger.getLogger("test7");
+        Logger logger = Logger.getLogger("testERROR");
         Resthome4LogsAppender appender = new Resthome4LogsAppender(1);
         logger.addAppender(appender);
-        LoggingEvent log = new LoggingEvent("", logger, Level.ERROR, "error message", null);
+        LoggingEvent log = new LoggingEvent("", logger, Level.ERROR
+                , "error message", null);
         appender.doAppend(log);
-        TimeUnit.SECONDS.sleep(1);
 
         URIBuilder builder = new URIBuilder();
         builder.setScheme("http").setHost(TEST_HOST).setPort(TEST_PORT).setPath(LOGS_PATH)
-                .setParameter("limit", "5")
-                .addParameter("level","DEBUG");
+                .setParameter("limit", "1")
+                .addParameter("level","ERROR");
         URI uri = builder.build();
         HttpResponse response = get(uri);
 
-        TimeUnit.SECONDS.sleep(1);
-        System.out.println(EntityUtils.toString(response.getEntity()));
-
-        //assertEquals(logevent, EntityUtils.toString(response.getEntity()));
+        assertTrue(EntityUtils.toString(response.getEntity()).contains("\"message\":\"error message\",\"timestamp\":\""
+                + formatCurrentTime(System.currentTimeMillis())
+                + "\",\"thread\":\"main\",\"logger\":\"testERROR\",\"level\":\"ERROR\",\"errorDetails\":\"\"}]"));
     }
 
     @Test
     public void testDEBUG()throws Exception {
         Assume.assumeTrue(isServerReady());
-        Logger logger = Logger.getLogger("test8");
-        Layout layout = new PatternLayout();
-        Resthome4LogsAppender appender = new Resthome4LogsAppender();
+        Logger logger = Logger.getLogger("testDEBUG");
+        Resthome4LogsAppender appender = new Resthome4LogsAppender(1);
         logger.addAppender(appender);
-        logger.debug("message");
-        //assertEquals(memAppender.getCurrentLogs().size(), 1);
+        LoggingEvent log = new LoggingEvent("", logger, Level.DEBUG
+                , "DEBUG message", null);
+        appender.doAppend(log);
+
+        URIBuilder builder = new URIBuilder();
+        builder.setScheme("http").setHost(TEST_HOST).setPort(TEST_PORT).setPath(LOGS_PATH)
+                .setParameter("limit", "1")
+                .addParameter("level","DEBUG");
+        URI uri = builder.build();
+        HttpResponse response = get(uri);
+
+        assertTrue(EntityUtils.toString(response.getEntity()).contains("\"message\":\"DEBUG message\",\"timestamp\":\""
+                + formatCurrentTime(System.currentTimeMillis())
+                + "\",\"thread\":\"main\",\"logger\":\"testDEBUG\",\"level\":\"DEBUG\",\"errorDetails\":\"\"}]"));
     }
 
     @Test
     public void testINFO()throws Exception {
         Assume.assumeTrue(isServerReady());
-        Logger logger = Logger.getLogger("test9");
-        Layout layout = new PatternLayout();
-        Resthome4LogsAppender appender = new Resthome4LogsAppender();
+        Logger logger = Logger.getLogger("testINFO");
+        Resthome4LogsAppender appender = new Resthome4LogsAppender(1);
         logger.addAppender(appender);
-        logger.info("message");
-        //assertEquals(memAppender.getCurrentLogs().size(), 1);
+        LoggingEvent log = new LoggingEvent("", logger, Level.INFO
+                , "INFO message", null);
+        appender.doAppend(log);
+
+        URIBuilder builder = new URIBuilder();
+        builder.setScheme("http").setHost(TEST_HOST).setPort(TEST_PORT).setPath(LOGS_PATH)
+                .setParameter("limit", "1")
+                .addParameter("level","INFO");
+        URI uri = builder.build();
+        HttpResponse response = get(uri);
+
+        assertTrue(EntityUtils.toString(response.getEntity()).contains("\"message\":\"INFO message\",\"timestamp\":\""
+                + formatCurrentTime(System.currentTimeMillis())
+                + "\",\"thread\":\"main\",\"logger\":\"testINFO\",\"level\":\"INFO\",\"errorDetails\":\"\"}]"));
     }
 
     @Test
     public void testWARN()throws Exception {
         Assume.assumeTrue(isServerReady());
-        Logger logger = Logger.getLogger("test10");
-        Layout layout = new PatternLayout();
-        Resthome4LogsAppender appender = new Resthome4LogsAppender();
+        Logger logger = Logger.getLogger("testWARN");
+        Resthome4LogsAppender appender = new Resthome4LogsAppender(1);
         logger.addAppender(appender);
-        logger.warn("message");
-        //assertEquals(memAppender.getCurrentLogs().size(), 1);
+        LoggingEvent log = new LoggingEvent("", logger, Level.WARN
+                , "WARN message", null);
+        appender.doAppend(log);
+
+        URIBuilder builder = new URIBuilder();
+        builder.setScheme("http").setHost(TEST_HOST).setPort(TEST_PORT).setPath(LOGS_PATH)
+                .setParameter("limit", "1")
+                .addParameter("level","WARN");
+        URI uri = builder.build();
+        HttpResponse response = get(uri);
+
+        assertTrue(EntityUtils.toString(response.getEntity()).contains("\"message\":\"WARN message\",\"timestamp\":\""
+                + formatCurrentTime(System.currentTimeMillis())
+                + "\",\"thread\":\"main\",\"logger\":\"testWARN\",\"level\":\"WARN\",\"errorDetails\":\"\"}]"));
     }
 
     @Test
     public void testFATAL()throws Exception {
         Assume.assumeTrue(isServerReady());
-        Logger logger = Logger.getLogger("test11");
-        Layout layout = new PatternLayout();
-        Resthome4LogsAppender appender = new Resthome4LogsAppender();
+        Logger logger = Logger.getLogger("testFATAL");
+        Resthome4LogsAppender appender = new Resthome4LogsAppender(1);
         logger.addAppender(appender);
-        logger.fatal("Message");
-        //assertEquals(memAppender.getCurrentLogs().size(), 1);
+        LoggingEvent log = new LoggingEvent("", logger, Level.FATAL
+                , "fatal message", null);
+        appender.doAppend(log);
+
+        URIBuilder builder = new URIBuilder();
+        builder.setScheme("http").setHost(TEST_HOST).setPort(TEST_PORT).setPath(LOGS_PATH)
+                .setParameter("limit", "1")
+                .addParameter("level","FATAL");
+        URI uri = builder.build();
+        HttpResponse response = get(uri);
+
+        assertTrue(EntityUtils.toString(response.getEntity()).contains("\"message\":\"fatal message\",\"timestamp\":\""
+                + formatCurrentTime(System.currentTimeMillis())
+                + "\",\"thread\":\"main\",\"logger\":\"testFATAL\",\"level\":\"FATAL\",\"errorDetails\":\"\"}]"));
     }
 
     @Test
     public void testTrace()throws Exception {
         Assume.assumeTrue(isServerReady());
-        Logger logger = Logger.getLogger("test12");
-        logger.setLevel(Level.TRACE);
-        Layout layout = new PatternLayout();
-        Resthome4LogsAppender appender = new Resthome4LogsAppender();
+        Logger logger = Logger.getLogger("testTRACE");
+        Resthome4LogsAppender appender = new Resthome4LogsAppender(1);
         logger.addAppender(appender);
-        logger.trace("Message");
-        //assertEquals(memAppender.getCurrentLogs().size(), 1);
+        LoggingEvent log = new LoggingEvent("", logger, Level.TRACE
+                , "TRACE message", null);
+        appender.doAppend(log);
+
+        URIBuilder builder = new URIBuilder();
+        builder.setScheme("http").setHost(TEST_HOST).setPort(TEST_PORT).setPath(LOGS_PATH)
+                .setParameter("limit", "1")
+                .addParameter("level","TRACE");
+        URI uri = builder.build();
+        HttpResponse response = get(uri);
+
+        assertTrue(EntityUtils.toString(response.getEntity()).contains("\"message\":\"TRACE message\",\"timestamp\":\""
+                + formatCurrentTime(System.currentTimeMillis())
+                + "\",\"thread\":\"main\",\"logger\":\"testTRACE\",\"level\":\"TRACE\",\"errorDetails\":\"\"}]"));
+    }
+
+    public String formatCurrentTime(long timestamp){
+        Date date = new Date(timestamp);
+        DateFormat formatter = new SimpleDateFormat("dd:MM:YYYY");
+        formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+        return formatter.format(date);
+    }
+
+    // LOG MONITOR TESTS ===============================================================================================
+
+    @Test
+    public void testGUI() throws Exception {
+        Assume.assumeTrue(isServerReady());
+        LogMonitor gui = new LogMonitor();
+        gui.doFetchStats();
+        gui.doDownloadStats();
     }
 
 }

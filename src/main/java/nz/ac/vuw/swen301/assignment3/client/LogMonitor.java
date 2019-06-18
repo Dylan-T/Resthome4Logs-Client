@@ -24,7 +24,7 @@ import java.util.ArrayList;
 
 
 public class LogMonitor {
-    static JFrame frame;
+    private JFrame frame;
     private JPanel wrapper;
 
     private JPanel actionbar;
@@ -46,8 +46,14 @@ public class LogMonitor {
 
 
     public LogMonitor() {
+        frame = new JFrame("LogMonitor");
+
         this.wrapper = new JPanel();
         wrapper.setLayout(new BorderLayout());
+
+
+
+
         actionbar = new JPanel();
 
         level = new JPanel();
@@ -86,9 +92,13 @@ public class LogMonitor {
 
         //Create table and add it to the GUI
         doFetchStats();
+        frame.setContentPane(wrapper);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.pack();
+        frame.setVisible(true);
     }
 
-    private void doDownloadStats() {
+    public void doDownloadStats() {
         //build request and set parameters
         URIBuilder builder = new URIBuilder();
         builder.setScheme("http").setHost("localhost:8080").setPath("/resthome4logs/stats");
@@ -102,29 +112,30 @@ public class LogMonitor {
         HttpGet request = new HttpGet(uri);
 
         //execute request
+        InputStream is = null;
+        FileOutputStream fos = null;
         try {
             HttpResponse response = httpClient.execute(request);
 
-            InputStream is = response.getEntity().getContent();
+            is = response.getEntity().getContent();
 
             //Create a FileOutputStream
-            FileOutputStream fos = new FileOutputStream(new File("workbook.xls"));
+            fos = new FileOutputStream(new File("workbook.xls"));
             //and read from is and write with fos
             int read = 0;
             byte[] buffer = new byte[32768];
             while( (read = is.read(buffer)) > 0) {
                 fos.write(buffer, 0, read);
             }
-
             fos.close();
             is.close();
         }catch (Exception e){
-
+            e.printStackTrace();
         }
+
     }
 
     public void doFetchStats(){
-        System.out.println("Fetching stats");
         String level = (String) levelSelector.getSelectedItem();
         int limit = (int)limitField.getValue();
 
@@ -146,7 +157,6 @@ public class LogMonitor {
         try {
             HttpResponse response = httpClient.execute(request);
             String logs = EntityUtils.toString(response.getEntity());
-            System.out.println(logs);
 
 
             // Convert logs String into JSON Array
@@ -172,7 +182,7 @@ public class LogMonitor {
                 }
 
             }
-
+            return;
 
         } catch (IOException e) {
 
@@ -200,11 +210,11 @@ public class LogMonitor {
     }
 
     public static void main(String[] args) {
-        frame = new JFrame("LogMonitor");
-        frame.setContentPane(new LogMonitor().wrapper);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.pack();
-        frame.setVisible(true);
+        new LogMonitor();
+    }
+
+    public void close(){
+        frame.setVisible(false);
     }
 
 }

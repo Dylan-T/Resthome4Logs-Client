@@ -34,7 +34,7 @@ import java.util.*;
  *   }
  */
 public class Resthome4LogsAppender extends AppenderSkeleton {
-    private List<String> logCache = new ArrayList<>();
+    public List<String> logCache = new ArrayList<>();
     private int cacheLimit;
 
     public Resthome4LogsAppender(){
@@ -69,15 +69,12 @@ public class Resthome4LogsAppender extends AppenderSkeleton {
             HttpPost request = new HttpPost(uri);
 
             //Create entity
-            System.out.println(new Gson().toJson(loggingEvents));
             StringEntity params = new StringEntity(new Gson().toJson(loggingEvents));
             params.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
             request.setEntity(params);
 
             //Execute request
-            HttpResponse response = httpClient.execute(request);
-
-            String content = EntityUtils.toString(response.getEntity());
+            httpClient.execute(request);
         } catch (Exception e) {
 
         }
