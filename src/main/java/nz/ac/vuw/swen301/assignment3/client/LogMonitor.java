@@ -146,7 +146,7 @@ public class LogMonitor {
         try {
             HttpResponse response = httpClient.execute(request);
             String logs = EntityUtils.toString(response.getEntity());
-
+            System.out.println(logs);
 
 
             // Convert logs String into JSON Array
@@ -175,7 +175,7 @@ public class LogMonitor {
 
 
         } catch (IOException e) {
-            e.printStackTrace();
+
         }
 
 

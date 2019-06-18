@@ -1,18 +1,25 @@
 package test.nz.ac.vuw.swen301.assignment3.client;
 
+import junit.framework.TestCase;
 import nz.ac.vuw.swen301.assignment3.client.Resthome4LogsAppender;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.http.util.EntityUtils;
+import org.apache.log4j.*;
 import org.apache.log4j.spi.LoggingEvent;
 import org.junit.Assume;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.net.URI;
+import java.sql.Time;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.Assert.assertEquals;
 
 public class Resthome4LogsAppenderTests {
     private static final String TEST_HOST = "localhost";
@@ -20,18 +27,6 @@ public class Resthome4LogsAppenderTests {
     private static final String TEST_PATH = "/resthome4logs"; // as defined in pom.xml
     private static final String LOGS_PATH = TEST_PATH + "/logs";
 
-    //HELPER METHODS
-//    @BeforeClass
-//    public static void startServer() throws Exception {
-//        Runtime.getRuntime().exec("mvn jetty:run");
-//        Thread.sleep(3000);
-//    }
-//
-//    @AfterClass
-//    public static void stopServer() throws Exception {
-//        Runtime.getRuntime().exec("mvn jetty:stop");
-//        Thread.sleep(3000);
-//    }
 
     private HttpResponse get(URI uri) throws Exception {
         HttpClient httpClient = HttpClientBuilder.create().build();
@@ -41,52 +36,125 @@ public class Resthome4LogsAppenderTests {
 
     private boolean isServerReady() throws Exception {
         URIBuilder builder = new URIBuilder();
-        builder.setScheme("http").setHost(TEST_HOST).setPort(TEST_PORT).setPath(TEST_PATH);
+        builder.setScheme("http").setHost(TEST_HOST).setPort(TEST_PORT).setPath(LOGS_PATH)
+                .addParameter("level","WARN").addParameter("limit", "25");
         URI uri = builder.build();
         try {
             HttpResponse response = get(uri);
             boolean success = response.getStatusLine().getStatusCode() == 200;
 
             if (!success) {
-                System.err.println("Check whether server is up and running, request to " + uri + " returns " + response.getStatusLine());
+                System.err.println("Check whether server is up and running, request to " + uri
+                        + " returns " + response.getStatusLine());
             }
 
             return success;
         }
         catch (Exception x) {
-            System.err.println("Encountered error connecting to " + uri + " -- check whether server is running and application has been deployed");
+            System.err.println("Encountered error connecting to " + uri
+                    + " -- check whether server is running and application has been deployed");
             return false;
         }
     }
 
-    @Test
-    public void testGet() throws Exception{
-        Assume.assumeTrue(isServerReady());
-        Resthome4LogsAppender appender = new Resthome4LogsAppender();// TODO: Check assignment 2 for test idea's
 
+    // APPENDER TESTS ==================================================================================================
+
+    //public LoggingEvent(String fqnOfCategoryClass, Category logger, Priority level, Object message, Throwable throwable)
+    //public LoggingEvent(String fqnOfCategoryClass, Category logger, long timeStamp, Priority level, Object message, Throwable throwable)
+
+    @Test
+    public void testLogCache()throws Exception {
+        Assume.assumeTrue(isServerReady());
+        Logger logger = Logger.getLogger("test3");
     }
 
+    @Test
+    public void testClose()throws Exception {
+        Assume.assumeTrue(isServerReady());
+        Logger logger = Logger.getLogger("test4");
+        Resthome4LogsAppender appender = new Resthome4LogsAppender();
+        logger.addAppender(appender);
+        logger.error("Message");
+    }
 
     @Test
-    public void test(){
-        /**
-         * [
-         *   {
-         *     "id": "d290f1ee-6c54-4b01-90e6-d701748f0851",
-         *     "message": "application started",
-         *     "timestamp": {},
-         *     "thread": "main",
-         *     "logger": "com.example.Foo",
-         *     "level": "DEBUG",
-         *     "errorDetails": "string"
-         *   }
-         * ]
-         */
-        Logger logger = Logger.getLogger("test1");
-        LoggingEvent logEvent = new LoggingEvent("", logger, Level.INFO, "Test", null);
+    public void testERROR()throws Exception {
+        Assume.assumeTrue(isServerReady());
+        Logger logger = Logger.getLogger("test7");
+        Resthome4LogsAppender appender = new Resthome4LogsAppender(1);
+        logger.addAppender(appender);
+        LoggingEvent log = new LoggingEvent("", logger, Level.ERROR, "error message", null);
+        appender.doAppend(log);
+        TimeUnit.SECONDS.sleep(1);
+
+        URIBuilder builder = new URIBuilder();
+        builder.setScheme("http").setHost(TEST_HOST).setPort(TEST_PORT).setPath(LOGS_PATH)
+                .setParameter("limit", "5")
+                .addParameter("level","DEBUG");
+        URI uri = builder.build();
+        HttpResponse response = get(uri);
+
+        TimeUnit.SECONDS.sleep(1);
+        System.out.println(EntityUtils.toString(response.getEntity()));
+
+        //assertEquals(logevent, EntityUtils.toString(response.getEntity()));
+    }
+
+    @Test
+    public void testDEBUG()throws Exception {
+        Assume.assumeTrue(isServerReady());
+        Logger logger = Logger.getLogger("test8");
+        Layout layout = new PatternLayout();
         Resthome4LogsAppender appender = new Resthome4LogsAppender();
-        String json = appender.formatEvent(logEvent).toString();
-        System.out.println(json);
+        logger.addAppender(appender);
+        logger.debug("message");
+        //assertEquals(memAppender.getCurrentLogs().size(), 1);
+    }
+
+    @Test
+    public void testINFO()throws Exception {
+        Assume.assumeTrue(isServerReady());
+        Logger logger = Logger.getLogger("test9");
+        Layout layout = new PatternLayout();
+        Resthome4LogsAppender appender = new Resthome4LogsAppender();
+        logger.addAppender(appender);
+        logger.info("message");
+        //assertEquals(memAppender.getCurrentLogs().size(), 1);
+    }
+
+    @Test
+    public void testWARN()throws Exception {
+        Assume.assumeTrue(isServerReady());
+        Logger logger = Logger.getLogger("test10");
+        Layout layout = new PatternLayout();
+        Resthome4LogsAppender appender = new Resthome4LogsAppender();
+        logger.addAppender(appender);
+        logger.warn("message");
+        //assertEquals(memAppender.getCurrentLogs().size(), 1);
+    }
+
+    @Test
+    public void testFATAL()throws Exception {
+        Assume.assumeTrue(isServerReady());
+        Logger logger = Logger.getLogger("test11");
+        Layout layout = new PatternLayout();
+        Resthome4LogsAppender appender = new Resthome4LogsAppender();
+        logger.addAppender(appender);
+        logger.fatal("Message");
+        //assertEquals(memAppender.getCurrentLogs().size(), 1);
+    }
+
+    @Test
+    public void testTrace()throws Exception {
+        Assume.assumeTrue(isServerReady());
+        Logger logger = Logger.getLogger("test12");
+        logger.setLevel(Level.TRACE);
+        Layout layout = new PatternLayout();
+        Resthome4LogsAppender appender = new Resthome4LogsAppender();
+        logger.addAppender(appender);
+        logger.trace("Message");
+        //assertEquals(memAppender.getCurrentLogs().size(), 1);
     }
 
 }
